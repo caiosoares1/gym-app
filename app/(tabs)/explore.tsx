@@ -1,112 +1,178 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const [email, setEmail] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  async function loadUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }
+
+  async function handleSignOut() {
+    Alert.alert(
+      'Sair da Conta',
+      'Deseja realmente sair?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Sair', 
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              Alert.alert('Erro', error.message);
+              setLoading(false);
+            } else {
+              router.replace('/login');
+            }
+          }
+        }
+      ]
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+    <ThemedView style={styles.container}>
+      <View style={styles.header}>
+        <ThemedText type="title">Perfil</ThemedText>
+      </View>
+
+      <View style={styles.content}>
+        {/* Card de Informações do Usuário */}
+        <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.icon }]}>
+          <View style={styles.iconContainer}>
+            <IconSymbol size={60} name="person.fill" color={colors.tint} />
+          </View>
+          <ThemedText style={styles.email}>{email || 'Carregando...'}</ThemedText>
+        </View>
+
+        {/* Card de Estatísticas */}
+        <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.icon }]}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>Informações</ThemedText>
+          <View style={styles.infoRow}>
+            <ThemedText style={styles.infoLabel}>Versão do App</ThemedText>
+            <ThemedText style={styles.infoValue}>1.0.0</ThemedText>
+          </View>
+          <View style={styles.infoRow}>
+            <View style={styles.infoLabelContainer}>
+              <IconSymbol 
+                size={20} 
+                name={colorScheme === 'dark' ? 'moon.fill' : 'sun.max.fill'} 
+                color={colors.text} 
+              />
+              <ThemedText style={styles.infoLabel}>Tema</ThemedText>
+            </View>
+            <ThemedText style={styles.infoValue}>
+              {colorScheme === 'dark' ? 'Escuro' : 'Claro'}
             </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+          </View>
+        </View>
+
+        {/* Botão de Logout */}
+        <TouchableOpacity 
+          style={[styles.logoutButton, loading && styles.buttonDisabled]}
+          onPress={handleSignOut}
+          disabled={loading}
+        >
+          <IconSymbol size={24} name="arrow.right.square" color="#fff" />
+          <ThemedText style={styles.logoutButtonText}>
+            {loading ? 'Saindo...' : 'Sair da Conta'}
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    paddingTop: 60,
   },
-  titleContainer: {
+  header: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    gap: 20,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginBottom: 15,
+  },
+  email: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    marginBottom: 15,
+    alignSelf: 'flex-start',
+  },
+  infoRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+    alignItems: 'center',
+  },
+  infoLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+  },
+  infoLabel: {
+    fontSize: 16,
+    opacity: 0.7,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: '#dc2626',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 'auto',
+    marginBottom: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });

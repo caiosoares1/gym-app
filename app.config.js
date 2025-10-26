@@ -1,4 +1,4 @@
-{
+export default {
   "expo": {
     "name": "gym-app",
     "slug": "gym-app",
@@ -43,6 +43,10 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "supabaseUrl": process.env.SUPABASE_URL,
+      "supabaseAnonKey": process.env.SUPABASE_ANON_KEY
     }
   }
 }
