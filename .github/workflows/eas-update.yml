@@ -37,3 +37,6 @@ jobs:
 
       - name: Publish update
         run: eas update --auto --non-interactive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

@@ -41,6 +41,9 @@ jobs:
 
       - name: Build Android APK
         run: eas build --platform android --profile preview --non-interactive --no-wait
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Comment PR with build link
         if: github.event_name == 'pull_request'
