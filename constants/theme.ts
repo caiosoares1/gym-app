@@ -6,7 +6,7 @@
 import { Platform } from 'react-native';
 
 const tintColorLight = '#0a7ea4';
-const tintColorDark = '#4FC3F7'; // Azul claro para modo escuro
+const tintColorDark = '#FF5722'; // Laranja accent para modo escuro
 
 export const Colors = {
   light: {
@@ -16,20 +16,35 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
-    // Cores para botões primários
     buttonPrimary: '#0a7ea4',
     buttonPrimaryText: '#fff',
+    border: '#E5E7EB',
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    textSecondary: '#9BA1A6',
+    background: '#0A1628',
+    backgroundCard: '#1A2942',
+    backgroundCardLight: '#243B5A',
     tint: tintColorDark,
+    accent: '#FF5722',
+    accentGradientStart: '#FF6B3D',
+    accentGradientEnd: '#FF4E2E',
     icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    // Cores para botões primários
-    buttonPrimary: '#4FC3F7',
-    buttonPrimaryText: '#000',
+    tabIconDefault: '#6B7280',
+    tabIconSelected: '#FF5722',
+    buttonPrimary: '#FF5722',
+    buttonPrimaryText: '#fff',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    border: '#374151',
+    purple: '#A855F7',
+    blue: '#3B82F6',
+    cyan: '#06B6D4',
+    pink: '#EC4899',
+    orange: '#FF5722',
+    green: '#10B981',
   },
 };
 
