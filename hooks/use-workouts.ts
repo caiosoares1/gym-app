@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { 
-  Workout, 
-  WorkoutWithExercises, 
-  CreateWorkoutInput, 
-  UpdateWorkoutInput 
+import {
+    CreateWorkoutInput,
+    UpdateWorkoutInput,
+    WorkoutWithExercises
 } from '@/types/workout';
+import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
 export function useWorkouts() {

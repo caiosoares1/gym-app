@@ -1,13 +1,12 @@
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useWorkouts } from '@/hooks/use-workouts';
 import {
-  ScrollView,
-  StyleSheet,
-  View
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

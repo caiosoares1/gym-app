@@ -7,13 +7,13 @@ import { useWorkouts } from '@/hooks/use-workouts';
 import { WorkoutWithExercises } from '@/types/workout';
 import { router } from 'expo-router';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
