@@ -23,7 +23,10 @@ export function useWorkouts() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        throw new Error('Usuário não autenticado');
+        // Silenciosamente não fazer nada se não estiver autenticado
+        setWorkouts([]);
+        setLoading(false);
+        return;
       }
 
       // Buscar treinos com seus exercícios
