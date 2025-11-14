@@ -7,7 +7,7 @@ import { useExercises } from '@/hooks/use-exercises';
 import { useWorkouts } from '@/hooks/use-workouts';
 import { Exercise } from '@/types/workout';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -39,6 +39,8 @@ export default function AddWorkoutScreen() {
   const { exercises, exercisesByCategory, getCategories, loading: loadingExercises } = useExercises();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  
+  const categories = useMemo(() => getCategories(), [exercises]);
 
   function handleAddExercise(exercise: Exercise) {
     const newExercise: SelectedExercise = {
@@ -176,11 +178,14 @@ export default function AddWorkoutScreen() {
             <TouchableOpacity
               style={[
                 styles.saveButton,
-                { backgroundColor: colors.buttonPrimary || colors.tint },
+                { backgroundColor: colors.accent },
                 loading && styles.buttonDisabled
               ]}
               onPress={handleSave}
               disabled={loading}
+              accessibilityLabel="Salvar treino"
+              accessibilityHint="Salva o treino com os exercícios selecionados"
+              accessibilityRole="button"
             >
               <IconSymbol size={22} name="checkmark.circle.fill" color={colors.buttonPrimaryText || '#fff'} />
               <ThemedText style={[
@@ -257,6 +262,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingTop: 60,
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 30,
@@ -264,7 +270,8 @@ const styles = StyleSheet.create({
   backButton: {
     fontSize: 16,
     marginBottom: 10,
-    color: '#0a7ea4',
+    color: '#FF5722',
+    fontWeight: '600',
   },
   form: {
     gap: 20,
@@ -279,14 +286,19 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 12,
     fontSize: 16,
   },
   exerciseCard: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 10,
+    borderWidth: 0,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   exerciseHeader: {
     flexDirection: 'row',
@@ -318,12 +330,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 16,
     textAlign: 'center',
+    fontWeight: '600',
   },
   addExerciseButton: {
     borderWidth: 2,
     borderStyle: 'dashed',
-    padding: 15,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
   },
@@ -332,17 +345,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   saveButton: {
-    padding: 15,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
+    shadowColor: '#FF5722',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   saveButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -372,22 +390,33 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   categoryButton: {
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderWidth: 0,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   categoryButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   exerciseButton: {
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderWidth: 0,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   exerciseButtonText: {
     fontSize: 16,
+    fontWeight: '500',
   },
 });

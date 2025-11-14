@@ -26,6 +26,17 @@ const MAPPING = {
   'moon.fill': 'nightlight',
   'sun.max.fill': 'wb-sunny',
   'checkmark.circle.fill': 'check-circle',
+  'figure.strengthtraining.traditional': 'fitness-center',
+  'plus': 'add',
+  'flame': 'local-fire-department',
+  'flame.fill': 'local-fire-department',
+  'chart.bar': 'bar-chart',
+  'chart.bar.fill': 'bar-chart',
+  'trophy': 'emoji-events',
+  'calendar': 'calendar-today',
+  'chart.bar.doc.horizontal': 'analytics',
+  'chart.line.uptrend.xyaxis': 'trending-up',
+  'target': 'track-changes',
 } as IconMapping;
 
 /**

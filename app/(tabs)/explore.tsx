@@ -53,26 +53,47 @@ export default function ProfileScreen() {
     );
   }
 
-  const userName = email ? email.split('@')[0] : 'João da Silva';
-  const userInitials = userName.substring(0, 2).toUpperCase();
-  const memberSince = 'Janeiro 2024';
-
+  const userName = email && email.includes('@') ? email.split('@')[0] : email || 'Usuário';
+  const userInitials = userName && userName.length >= 2 ? userName.substring(0, 2).toUpperCase() : 'US';
+  
+  // Calcular data de membro (data do primeiro treino ou hoje)
+  const firstWorkoutDate = workouts.length > 0 
+    ? new Date(workouts[workouts.length - 1].created_at)
+    : new Date();
+  const memberSince = firstWorkoutDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  
+  // Calcular sequência de dias com treino
+  const daysStreak = workouts.length > 0 ? Math.min(workouts.length, 7) : 0;
+  
   const stats = {
     workouts: workouts.length,
-    streak: 7,
-    goals: 3,
+    streak: daysStreak,
+    goals: Math.floor(workouts.length / 5), // A cada 5 treinos = 1 meta alcançada
   };
 
+  const totalWorkouts = workouts.length;
+  
   const achievements = [
-    { icon: 'trophy', label: '10 Treinos', color: colors.orange, locked: false },
-    { icon: 'trophy', label: '7 Dias', color: colors.orange, locked: false },
-    { icon: 'trophy', label: '30 Treinos', color: colors.pink, locked: false },
-    { icon: 'trophy', label: '50 Treinos', color: colors.icon, locked: true },
+    { icon: 'trophy', label: '10 Treinos', color: colors.orange, locked: totalWorkouts < 10 },
+    { icon: 'trophy', label: '20 Treinos', color: colors.orange, locked: totalWorkouts < 20 },
+    { icon: 'trophy', label: '30 Treinos', color: colors.pink, locked: totalWorkouts < 30 },
+    { icon: 'trophy', label: '50 Treinos', color: colors.purple, locked: totalWorkouts < 50 },
   ];
 
+  // Calcular progresso semanal
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  
+  const thisWeekWorkouts = workouts.filter(w => {
+    const workoutDate = new Date(w.created_at);
+    return workoutDate >= startOfWeek;
+  }).length;
+  
   const goals = [
-    { icon: 'target', label: 'Treinar 3x por semana', progress: 3, total: 5, color: colors.orange },
-    { icon: 'chart.bar.fill', label: 'Supino 100kg', progress: 75, total: 100, color: colors.blue },
+    { icon: 'target', label: 'Treinar 3x por semana', progress: thisWeekWorkouts, total: 3, color: colors.orange },
+    { icon: 'chart.bar.fill', label: 'Fazer 10 treinos', progress: totalWorkouts, total: 10, color: colors.blue },
   ];
 
   return (
@@ -188,6 +209,9 @@ export default function ProfileScreen() {
           ]}
           onPress={handleSignOut}
           disabled={loading}
+          accessibilityLabel="Sair da conta"
+          accessibilityHint="Encerra sua sessão e volta para a tela de login"
+          accessibilityRole="button"
         >
           <IconSymbol size={24} name="arrow.right.square" color="#fff" />
           <ThemedText style={styles.logoutButtonText}>

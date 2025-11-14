@@ -4,12 +4,13 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useWorkouts } from '@/hooks/use-workouts';
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,13 +20,26 @@ export default function HomeScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
 
-  // Estatísticas
-  const stats = {
-    daysStreak: 7,
-    monthWorkouts: workouts.length,
-    goalsAchieved: 3,
-    totalWorkouts: 45,
-  };
+  // Estatísticas calculadas dos treinos reais com otimização
+  const stats = useMemo(() => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    
+    const monthWorkouts = workouts.filter(w => {
+      const workoutDate = new Date(w.created_at);
+      return workoutDate.getMonth() === thisMonth && workoutDate.getFullYear() === thisYear;
+    }).length;
+    
+    const daysStreak = workouts.length > 0 ? Math.min(workouts.length, 7) : 0;
+    
+    return {
+      daysStreak,
+      monthWorkouts,
+      goalsAchieved: Math.floor(monthWorkouts / 3),
+      totalWorkouts: workouts.length,
+    };
+  }, [workouts]);
 
   // Treino do dia (exemplo - pegar o primeiro)
   const todayWorkout = workouts[0];
@@ -118,7 +132,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Treino de Hoje */}
-      {todayWorkout && (
+      {todayWorkout ? (
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Treino de Hoje</ThemedText>
           <View style={[styles.todayCard, { backgroundColor: colors.backgroundCard }]}>
@@ -138,6 +152,24 @@ export default function HomeScreen() {
               onPress={() => router.push(`/workout/edit/${todayWorkout.id}` as any)}
             >
               <ThemedText style={styles.startButtonText}>Iniciar Treino</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Treino de Hoje</ThemedText>
+          <View style={[styles.emptyCard, { backgroundColor: colors.backgroundCard }]}>
+            <IconSymbol size={48} name="figure.strengthtraining.traditional" color={colors.textSecondary} />
+            <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
+              Nenhum treino cadastrado ainda
+            </ThemedText>
+            <TouchableOpacity 
+              style={[styles.emptyButton, { backgroundColor: colors.accent }]}
+              onPress={() => router.push('/workout/add' as any)}
+              accessibilityLabel="Criar primeiro treino"
+              accessibilityHint="Abre a tela para criar seu primeiro treino"
+            >
+              <ThemedText style={styles.emptyButtonText}>Criar Primeiro Treino</ThemedText>
             </TouchableOpacity>
           </View>
         </View>
@@ -316,6 +348,27 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyCard: {
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    gap: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  emptyButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

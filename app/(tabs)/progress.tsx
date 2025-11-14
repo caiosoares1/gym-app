@@ -3,6 +3,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useWorkouts } from '@/hooks/use-workouts';
+import { useMemo } from 'react';
 import {
     ScrollView,
     StyleSheet,
@@ -16,23 +17,65 @@ export default function ProgressScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
 
-  // Dados da semana (exemplo)
-  const weekActivity = [
-    { day: 'Seg', active: true },
-    { day: 'Ter', active: true },
-    { day: 'Qua', active: true },
-    { day: 'Qui', active: false },
-    { day: 'Sex', active: false },
-    { day: 'Sáb', active: false },
-    { day: 'Dom', active: false },
-  ];
-
-  const thisWeekWorkouts = 3;
-  const lastWeekWorkouts = 2;
-  const percentChange = ((thisWeekWorkouts - lastWeekWorkouts) / lastWeekWorkouts) * 100;
-
-  const calories = 2.4;
-  const avgWeeklyCalories = 2.1;
+  // Calcular dados reais da semana com otimização
+  const weekData = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    
+    const thisWeekWorkouts = workouts.filter(w => {
+      const workoutDate = new Date(w.created_at);
+      return workoutDate >= startOfWeek && workoutDate < endOfWeek;
+    }).length;
+    
+    const startOfLastWeek = new Date(startOfWeek);
+    startOfLastWeek.setDate(startOfWeek.getDate() - 7);
+    const lastWeekWorkouts = workouts.filter(w => {
+      const workoutDate = new Date(w.created_at);
+      return workoutDate >= startOfLastWeek && workoutDate < startOfWeek;
+    }).length;
+    
+    const percentChange = lastWeekWorkouts > 0 
+      ? ((thisWeekWorkouts - lastWeekWorkouts) / lastWeekWorkouts) * 100 
+      : thisWeekWorkouts > 0 ? 100 : 0;
+    
+    const weekActivity = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => {
+      const dayDate = new Date(startOfWeek);
+      dayDate.setDate(startOfWeek.getDate() + index);
+      dayDate.setHours(0, 0, 0, 0);
+      
+      const nextDay = new Date(dayDate);
+      nextDay.setDate(dayDate.getDate() + 1);
+      
+      const hasWorkout = workouts.some(w => {
+        const workoutDate = new Date(w.created_at);
+        return workoutDate >= dayDate && workoutDate < nextDay;
+      });
+      
+      return { day, active: hasWorkout };
+    });
+    
+    const calories = (thisWeekWorkouts * 0.15).toFixed(1);
+    const totalWorkouts = workouts.length;
+    const avgWeeklyCalories = totalWorkouts > 0 
+      ? ((totalWorkouts * 0.15) / Math.max(1, Math.ceil(totalWorkouts / 7))).toFixed(1) 
+      : '0.0';
+    
+    return {
+      thisWeekWorkouts,
+      lastWeekWorkouts,
+      percentChange,
+      weekActivity,
+      calories,
+      avgWeeklyCalories,
+    };
+  }, [workouts]);
+  
+  const { thisWeekWorkouts, percentChange, weekActivity, calories, avgWeeklyCalories } = weekData;
 
   return (
     <ScrollView 
@@ -44,6 +87,18 @@ export default function ProgressScreen() {
       <View style={styles.header}>
         <ThemedText style={styles.title}>Seu Progresso</ThemedText>
       </View>
+
+      {workouts.length === 0 && (
+        <View style={[styles.emptyCard, { backgroundColor: colors.backgroundCard }]}>
+          <IconSymbol size={64} name="chart.bar.fill" color={colors.textSecondary} />
+          <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
+            Comece a treinar!
+          </ThemedText>
+          <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
+            Seus dados de progresso aparecerão aqui assim que você registrar seu primeiro treino.
+          </ThemedText>
+        </View>
+      )}
 
       {/* Cards de Progresso Semanal */}
       <View style={styles.section}>
@@ -121,9 +176,9 @@ export default function ProgressScreen() {
         </View>
       </View>
 
-      {/* Recordes Pessoais */}
+      {/* Resumo de Treinos */}
       <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>Recordes Pessoais</ThemedText>
+        <ThemedText style={styles.sectionTitle}>Resumo Geral</ThemedText>
         
         <View style={[styles.recordCard, { backgroundColor: colors.backgroundCard }]}>
           <View style={styles.recordHeader}>
@@ -131,36 +186,38 @@ export default function ProgressScreen() {
               <IconSymbol size={20} name="figure.strengthtraining.traditional" color={colors.blue} />
             </View>
             <View style={styles.recordInfo}>
-              <ThemedText style={styles.recordName}>Supino Reto</ThemedText>
+              <ThemedText style={styles.recordName}>Total de Treinos</ThemedText>
               <ThemedText style={[styles.recordMeta, { color: colors.textSecondary }]}>
-                Peso máximo
+                Desde o início
               </ThemedText>
             </View>
           </View>
           <View style={styles.recordValue}>
-            <ThemedText style={styles.recordNumber}>80kg</ThemedText>
+            <ThemedText style={styles.recordNumber}>{workouts.length}</ThemedText>
             <ThemedText style={[styles.recordChange, { color: colors.green }]}>
-              +5kg este mês
+              {thisWeekWorkouts} esta semana
             </ThemedText>
           </View>
         </View>
 
         <View style={[styles.recordCard, { backgroundColor: colors.backgroundCard }]}>
           <View style={styles.recordHeader}>
-            <View style={[styles.recordIcon, { backgroundColor: colors.blue + '20' }]}>
-              <IconSymbol size={20} name="figure.strengthtraining.traditional" color={colors.blue} />
+            <View style={[styles.recordIcon, { backgroundColor: colors.orange + '20' }]}>
+              <IconSymbol size={20} name="calendar" color={colors.orange} />
             </View>
             <View style={styles.recordInfo}>
-              <ThemedText style={styles.recordName}>Agachamento</ThemedText>
+              <ThemedText style={styles.recordName}>Exercícios Totais</ThemedText>
               <ThemedText style={[styles.recordMeta, { color: colors.textSecondary }]}>
-                Peso máximo
+                Em todos os treinos
               </ThemedText>
             </View>
           </View>
           <View style={styles.recordValue}>
-            <ThemedText style={styles.recordNumber}>120kg</ThemedText>
-            <ThemedText style={[styles.recordChange, { color: colors.green }]}>
-              +10kg este mês
+            <ThemedText style={styles.recordNumber}>
+              {workouts.reduce((sum, w) => sum + (w.workout_exercises?.length || 0), 0)}
+            </ThemedText>
+            <ThemedText style={[styles.recordChange, { color: colors.blue }]}>
+              exercícios realizados
             </ThemedText>
           </View>
         </View>
@@ -297,5 +354,22 @@ const styles = StyleSheet.create({
   },
   recordChange: {
     fontSize: 12,
+  },
+  emptyCard: {
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
